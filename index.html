@@ -1,0 +1,644 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#211712">
+<title>Dungeon Master's Chronicle</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#382719;--ink2:#604832;--muted:#80684d;--edge:#ad9068;--paper:#e9d9b7;--paper-light:#f4e9ce;--blue:#438fff;--line:#c5b18d}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Georgia,'Times New Roman',serif;color:var(--ink)}button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+#login{min-height:100svh;display:grid;place-items:center;padding:14px;background:radial-gradient(ellipse at 50% 42%,#453326 0,#211914 58%,#0d0a09 100%)}
+.book-cover{position:relative;isolation:isolate;overflow:hidden;width:min(760px,100%);min-height:min(900px,calc(100svh - 28px));padding:clamp(28px,5vw,54px) clamp(18px,4.5vw,42px);display:flex;flex-direction:column;align-items:center;background-color:#241510;background-image:radial-gradient(ellipse at 18% 15%,#a16d3c38,transparent 34%),radial-gradient(ellipse at 82% 78%,#050302a8,transparent 48%),repeating-linear-gradient(7deg,#ffffff0b 0 1px,transparent 1px 3px),repeating-linear-gradient(94deg,#00000030 0 1px,transparent 1px 6px),linear-gradient(135deg,#513321,#2a1a13 35%,#3b2519 60%,#1c110d 85%,#392316);border:4px solid #765638;border-radius:18px;box-shadow:inset 0 0 0 6px #160e0a,inset 0 0 0 8px #a27b4b,inset 0 0 0 11px #21140e,inset 0 0 65px 20px #080403,0 28px 90px #000,8px 5px 0 #100a07,13px 9px 0 #4b3020}
+.book-cover:before{content:"";position:absolute;inset:17px;border:1px solid #b08a55a8;border-radius:11px;box-shadow:inset 0 0 35px #080504;pointer-events:none}.book-cover:after{content:"";position:absolute;top:0;bottom:0;left:clamp(19px,4vw,36px);width:13px;border-left:2px solid #a47a4a88;border-right:1px solid #090604aa;background:linear-gradient(90deg,#08050488,#a47a4a22 35%,#05030266);pointer-events:none}.book-cover>*{position:relative;z-index:1}.cover-ornament{color:#ad8956;font-size:22px;margin:4px 0 14px}.book-cover h1{max-width:600px;margin:0 0 clamp(26px,5vh,46px);text-align:center;text-transform:uppercase;font-weight:normal;font-size:clamp(25px,5.6vw,46px);line-height:1.18;letter-spacing:clamp(2px,.65vw,5px);color:#d8bd8b;text-shadow:0 1px 0 #f1d9a1,0 2px 1px #080503,0 3px 2px #080503,0 -1px 1px #6f4d2d,0 0 18px #bd945044}
+.rune-grid{width:min(100%,620px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(8px,2vw,17px)}.rune{appearance:none;display:grid;place-items:center;min-width:0;aspect-ratio:1;padding:0;border:2px solid #73583e;border-radius:clamp(14px,3vw,24px);background:radial-gradient(ellipse at 35% 25%,#49362a,#211915 70%);color:#d4bd91;font-size:clamp(36px,8.2vw,64px);box-shadow:inset 0 2px 10px #090706,inset 0 -2px 8px #4a3829,0 4px 9px #080605;transition:.14s}.rune.selected{color:#a8ceff;border-color:#559cff;background:linear-gradient(145deg,#28384d,#182333 72%,#1e2d42);box-shadow:inset 0 0 20px #246bd966,0 0 8px #3188ff,0 0 23px #237bffb3;text-shadow:0 0 13px #58a5ff}.cover-bottom{margin-top:auto;padding-top:18px;color:#806344;font-size:13px;letter-spacing:5px}
+#app{min-height:100svh;padding:clamp(8px,1.5vw,20px);background:radial-gradient(ellipse at 20% 10%,#fff5d455,transparent 45%),radial-gradient(ellipse at 80% 85%,#92734a20,transparent 50%),repeating-linear-gradient(0deg,#73552a08 0 1px,transparent 1px 5px),linear-gradient(120deg,#e8d9b9,#d9c6a2 52%,#eadcbd)}
+.journal{max-width:1600px;margin:auto;min-height:calc(100svh - 30px);padding:clamp(10px,1.5vw,20px);border:1px solid #a58a61;background-color:#e8d9b9;background-image:radial-gradient(#896c4218 .7px,transparent .8px),repeating-linear-gradient(0deg,#8c70400a 0 1px,transparent 1px 5px),linear-gradient(100deg,#f1e5ca,#e6d5b2 50%,#f0e2c3);background-size:5px 5px,100% 100%,100% 100%;box-shadow:0 8px 30px #4d382533,inset 0 0 35px #94764a18;position:relative}.journal:before{content:"";position:absolute;inset:8px;border:1px solid #b49a70;pointer-events:none}
+.topbar{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 8px 13px;border-bottom:3px double #a88b61}.brand{font-size:clamp(18px,2.5vw,25px);letter-spacing:1px;color:#493321}.brand small{display:block;margin-top:4px;font-size:10px;letter-spacing:3px;color:#8b7251;font-style:italic}.top-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.paper-btn{padding:8px 11px;border:1px solid #b49a70;border-radius:3px;background:linear-gradient(#f3e7cb,#dfcba6);box-shadow:0 2px 3px #49351b20;color:#503923}.paper-btn:hover{background:#f8edda}
+.layout{position:relative;display:grid;grid-template-columns:minmax(210px,270px) minmax(0,1fr);gap:15px;min-height:calc(100svh - 120px);padding-top:14px}.sidebar,.main{min-width:0;border:1px solid #b49a70;box-shadow:inset 0 0 22px #94764a12,0 3px 10px #5a402018;background-color:#eee1c2;background-image:radial-gradient(#896c4210 .7px,transparent .8px),linear-gradient(100deg,#f0e4c9,#e9d9b8);background-size:5px 5px,100% 100%}.sidebar{padding:14px;overflow:auto}.side-title{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#806648;border-bottom:1px solid #b49a70;padding-bottom:9px;margin:4px 0 10px}.tree button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:8px 6px;border-radius:2px;color:#493522;line-height:1.35}.tree button:hover,.tree button.active{background:#d7c39e}.tree .kind{color:#947b5b;font-size:11px;margin-left:5px}.tree .child{font-size:15px}
+.main{padding:clamp(16px,2.7vw,34px);overflow:auto;min-height:72vh;background-color:#f1e6cf;background-image:radial-gradient(#896c4215 .7px,transparent .8px),repeating-linear-gradient(0deg,transparent 0 34px,#a78e6810 35px),linear-gradient(100deg,#f4ead5,#eee0c3 55%,#f5ead4);background-size:5px 5px,100% 100%,100% 100%}.crumb{font-size:12px;color:#8a7050;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}.page-title{font-size:clamp(27px,4vw,40px);font-weight:normal;margin:0 0 10px;padding-bottom:13px;border-bottom:1px solid #b49a70;color:#493321}.page-meta{font-style:italic;color:#8a7050;margin:8px 0 20px}.editor{min-height:260px;line-height:1.8;font-size:17px;outline:none;padding:12px 14px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,#a78e683b 32px);border-left:1px solid #b49a70;color:#463321}.editor:empty:before{content:attr(data-placeholder);color:#a08a69;font-style:italic}.toolbar,.page-tools{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.toolbar button{padding:6px 9px;background:#e5d5b4;border:1px solid #b49a70;border-radius:3px;color:#493522}.empty-note{color:#8a7050;font-style:italic;border:1px dashed #b49a70;padding:16px;margin-top:15px}.field{width:100%;padding:9px;background:#f8efd9;border:1px solid #b49a70;margin:5px 0 12px;color:#493522}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.form-grid label,.sheet-field label{font-size:13px;color:#806648}.status{font-size:12px;color:#8a7050;margin-top:12px}.danger{color:#853e2c}
+.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin:14px 0}.image-card{position:relative;border:1px solid #b49a70;background:#e7d8ba;padding:6px;box-shadow:0 2px 7px #49351b20}.image-card img{width:100%;height:145px;object-fit:contain;display:block;background:#d8c9ab}.image-card input{width:100%;margin-top:6px;border:0;background:transparent;color:var(--ink)}.image-card button{position:absolute;right:8px;top:8px;background:#2b2019d9;color:#fff;border:0;border-radius:3px;padding:4px 7px}.upload-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.upload-row input{max-width:100%;font-size:13px}.section-heading{font-size:21px;font-weight:normal;border-bottom:1px solid #b49a70;padding-bottom:7px;margin:22px 0 12px}.character-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}.character{border:1px solid #b49a70;background:#f0e3c5;padding:12px;cursor:pointer;box-shadow:0 2px 6px #49351b18}.character:hover{box-shadow:0 3px 12px #49351b30}.character img{width:100%;height:125px;object-fit:cover;background:#d8c9ab}.character h3{margin:8px 0 4px}.sheet-top{display:grid;grid-template-columns:1fr 170px;gap:14px;align-items:start}.portrait-box{border:1px solid #b49a70;padding:6px;background:#e7d8ba}.portrait-box img{width:100%;height:170px;object-fit:cover;background:#d8c9ab}.sheet-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.sheet-field input,.sheet-field textarea,.sheet-field select{width:100%;padding:7px;background:#fbf3e2;border:1px solid #b49a70;color:#493522;margin-top:4px;min-width:0}.sheet-field textarea{min-height:65px;resize:vertical}.ability-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}.ability{border:1px solid #b49a70;background:#e8d9b9;text-align:center;padding:8px 3px}.ability strong{display:block;font-size:12px}.ability input{width:100%;text-align:center;font-size:22px;font-weight:bold;padding:5px 0;border:1px solid #c5b18d;background:#fbf3e2;color:#493522}.ability output{display:block;font-size:13px;margin-top:4px}.stat-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.stat-box{border:1px solid #b49a70;text-align:center;padding:8px;background:#e8d9b9}.stat-box label{display:block;font-size:11px;text-transform:uppercase;color:#806648}.stat-box input{width:100%;border:0;border-bottom:1px solid #b49a70;background:transparent;text-align:center;font-size:20px;color:#493522;padding:4px}.skills-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 12px}.skill-line{display:flex;align-items:center;gap:7px;padding:4px 2px;border-bottom:1px dotted #c5b18d;font-size:13px}.skill-line input[type=checkbox]{accent-color:#765638}.skill-line output{margin-left:auto;font-weight:bold;min-width:25px;text-align:right}.sheet-table{width:100%;border-collapse:collapse;margin:8px 0}.sheet-table th,.sheet-table td{border:1px solid #b49a70;padding:6px;text-align:left}.sheet-table th{font-size:12px;background:#e4d3b1}.sheet-table input{width:100%;min-width:0;border:0;background:#fbf3e2;padding:6px;color:#493522}.small-help{font-size:12px;color:#8a7050}.checkline{display:flex;gap:8px;align-items:center;margin:7px 0;font-size:13px}
+#setupPanel{position:fixed;z-index:20;inset:0;background:#120d0be8;display:grid;place-items:center;padding:18px}.setup-card{width:min(520px,100%);padding:25px;background:#eadbb9;border:3px double #98774e;box-shadow:0 15px 60px #000;text-align:left}.setup-card h2{font-weight:normal;margin-top:0}.setup-card p{line-height:1.5}.setup-card input{width:100%;padding:12px;border:1px solid #ad9068;background:#fff7e6;margin:8px 0 12px}.setup-actions{display:flex;gap:8px;flex-wrap:wrap}.sync-pill{font-size:11px;color:#806648;border:1px solid #b49a70;padding:5px 8px;border-radius:20px}
+@media(max-width:760px){.book-cover{min-height:calc(100svh - 28px);padding:35px 17px 25px}.book-cover h1{margin:12px 0 30px}.rune-grid{gap:9px}.rune{font-size:clamp(35px,9vw,54px)}.layout{grid-template-columns:1fr}.sidebar{max-height:260px}.topbar{align-items:flex-start;flex-direction:column}.top-actions{justify-content:flex-start}.main{min-height:65vh}.journal{padding:10px}.sheet-top{grid-template-columns:1fr 115px}.portrait-box img{height:125px}.sheet-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ability-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.stat-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+
+<section id="login" aria-label="Chronicle cover">
+<div class="book-cover">
+<div class="cover-ornament">✧ &nbsp; ⟡ &nbsp; ✧</div>
+<h1>Dungeon Master's Chronicle</h1>
+<div class="rune-grid" id="runeGrid">
+<button class="rune" data-rune="0">ᚠ</button><button class="rune" data-rune="1">ᚢ</button><button class="rune" data-rune="2">ᚦ</button><button class="rune" data-rune="3">ᚨ</button>
+<button class="rune" data-rune="4">ᚱ</button><button class="rune" data-rune="5">ᚲ</button><button class="rune" data-rune="6">ᚷ</button><button class="rune" data-rune="7">ᚹ</button>
+<button class="rune" data-rune="8">ᚺ</button><button class="rune" data-rune="9">ᚾ</button><button class="rune" data-rune="10">ᛁ</button><button class="rune" data-rune="11">ᛃ</button>
+<button class="rune" data-rune="12">ᛇ</button><button class="rune" data-rune="13">ᛈ</button><button class="rune" data-rune="14">ᛉ</button><button class="rune" data-rune="15">ᛊ</button>
+</div>
+<div class="cover-bottom">✦ &nbsp; ✦ &nbsp; ✦</div>
+</div>
+</section>
+
+<section id="app" class="hidden">
+<div class="journal">
+<header class="topbar">
+<div class="brand">✧ DM'S CHRONICLE <small>THE ARCHIVE OF WORLDS UNSEEN</small></div>
+<div class="top-actions">
+<span class="sync-pill" id="syncStatus">Not connected</span>
+<button class="paper-btn" id="newCampaign">＋ Campaign</button>
+<button class="paper-btn" id="newFolder">＋ Subfolder / Trigger</button>
+<button class="paper-btn" id="newCharacter">＋ Character</button>
+<button class="paper-btn" id="pairBtn">Pair Emma's device</button>
+<button class="paper-btn" id="exportBtn">Export backup</button>
+<button class="paper-btn" id="lockBtn">Close journal</button>
+</div>
+</header>
+<div class="layout">
+<aside class="sidebar">
+<div class="side-title">Campaign explorer</div>
+<div id="tree" class="tree"></div>
+<div class="status" id="saveStatus">Waiting for cloud connection</div>
+</aside>
+<main class="main" id="main">
+<div class="crumb">YOUR CHRONICLE</div>
+<h1 class="page-title">A world waiting to be written</h1>
+<div class="page-meta">A blank page, awaiting its first story.</div>
+<p>Create a campaign, then add chapters, locations, encounters, quests, and anything else your world requires.</p>
+<div class="empty-note">Select a folder from the archive, or create your first campaign.</div>
+</main>
+</div>
+</div>
+</section>
+
+<div id="setupPanel" class="hidden">
+<div class="setup-card">
+<h2>Open the Chronicle</h2>
+<p>This device has not been connected to a chronicle yet. Create the shared archive on the first device, or join an existing archive using an invitation code.</p>
+<button class="paper-btn" id="createCloudBtn">Create a new shared chronicle</button>
+<h3>Join an existing chronicle</h3>
+<input id="inviteInput" autocomplete="off" placeholder="Paste Emma's invitation code">
+<div class="setup-actions">
+<button class="paper-btn" id="joinCloudBtn">Join chronicle</button>
+<button class="paper-btn" id="cancelSetupBtn">Cancel</button>
+</div>
+<p class="small-help">Invitation codes are single-use and expire after 30 minutes.</p>
+</div>
+</div>
+
+<script>
+/* SUPABASE CONFIGURATION */
+const SUPABASE_URL='https://rfcknwwapvxbhzdwnyot.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_xOPsrUgOwHwdqGI4z8uHOw_XZihps5B';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const STORE='dm_chronicle_encrypted_v2';
+
+let selected=[],vaultKey=null,workspace=null,currentId=null,saveTimer=null,activeRecord=null;
+let authUser=null,cloudChronicleId=null,lastCloudUpdatedAt=null,dirty=false,pollTimer=null,editingChar=null;
+const $=id=>document.getElementById(id);
+const uid=()=>crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36);
+const freshWorkspace=()=>({campaigns:[],characters:[]});
+const canEncrypt=()=>!!(window.crypto&&crypto.subtle&&window.isSecureContext);
+
+function getVault(){try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch{return []}}
+function setVault(v){localStorage.setItem(STORE,JSON.stringify(v))}
+function pinText(){return selected.map(i=>String(i).padStart(2,'0')).join('-')}
+function b64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf)))}
+function unb64(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
+async function deriveKey(pin,salt){
+ const m=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);
+ return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function encryptData(data,key){
+ const iv=crypto.getRandomValues(new Uint8Array(12));
+ const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(data)));
+ return{iv:b64(iv),cipher:b64(cipher)};
+}
+async function decryptData(r,p){
+ const key=await deriveKey(p,unb64(r.salt));
+ const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(r.iv)},key,unb64(r.cipher));
+ return{key,data:JSON.parse(new TextDecoder().decode(plain))};
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+/* AUTHENTICATION AND CLOUD */
+async function ensureAuth(){
+ const {data,error}=await sb.auth.getSession();
+ if(error)throw error;
+ if(data.session){authUser=data.session.user;return authUser}
+ const result=await sb.auth.signInAnonymously();
+ if(result.error)throw result.error;
+ authUser=result.data.user;
+ return authUser;
+}
+async function findExistingChronicle(){
+ const owned=await sb.from('chronicles').select('*').eq('owner_id',authUser.id).limit(1);
+ if(owned.error)throw owned.error;
+ if(owned.data?.length)return owned.data[0];
+
+ const memberships=await sb.from('chronicle_members').select('chronicle_id').eq('user_id',authUser.id).limit(1);
+ if(memberships.error)throw memberships.error;
+ if(memberships.data?.length){
+   const found=await sb.from('chronicles').select('*').eq('id',memberships.data[0].chronicle_id).single();
+   if(found.error)throw found.error;
+   return found.data;
+ }
+ return null;
+}
+
+/* UPDATED CHRONICLE CREATION WITH AUTH DIAGNOSTICS */
+async function createCloudChronicle(){
+ const name=prompt('Name your shared chronicle:','Our Campaigns');
+ if(!name?.trim())return;
+
+ setSync('Creating cloud chronicle…');
+
+ const authResult=await sb.auth.getUser();
+ if(authResult.error)throw authResult.error;
+
+ const user=authResult.data.user;
+ if(!user){
+   throw new Error('Supabase did not return an authenticated user.');
+ }
+
+ authUser=user;
+
+ console.log('Chronicle creation diagnostics:',{
+   project:SUPABASE_URL,
+   userId:user.id,
+   authenticated:!!user
+ });
+
+ const result=await sb.from('chronicles').insert({
+   owner_id:user.id,
+   name:name.trim(),
+   data:freshWorkspace()
+ }).select('*').single();
+
+ if(result.error){
+   console.error('Chronicle creation failed:',{
+     message:result.error.message,
+     code:result.error.code,
+     details:result.error.details,
+     hint:result.error.hint,
+     userId:user.id
+   });
+
+   throw new Error(
+     result.error.message+
+     '\nError code: '+result.error.code+
+     '\nDetails: '+(result.error.details||'None')+
+     '\nHint: '+(result.error.hint||'None')+
+     '\nAuthenticated user: '+user.id
+   );
+ }
+
+ await activateChronicle(result.data);
+}
+
+async function claimInvite(){
+ const token=$('inviteInput').value.trim();
+ if(!token){alert('Enter the invitation code first.');return}
+ setSync('Joining chronicle…');
+ const result=await sb.rpc('claim_chronicle_invite',{p_token:token});
+ if(result.error)throw result.error;
+ const found=await sb.from('chronicles').select('*').eq('id',result.data).single();
+ if(found.error)throw found.error;
+ await activateChronicle(found.data);
+ $('inviteInput').value='';
+}
+async function activateChronicle(row){
+ cloudChronicleId=row.id;
+ workspace=row.data||freshWorkspace();
+ if(!workspace.campaigns)workspace.campaigns=[];
+ if(!workspace.characters)workspace.characters=[];
+ lastCloudUpdatedAt=row.updated_at||null;
+ dirty=false;
+ await createLocalVaultRecord(pinText(),workspace);
+ $('setupPanel').classList.add('hidden');
+ openJournal();
+ setSync('☁ Connected');
+ setSaveStatus('Cloud journal connected');
+ startCloudPolling();
+}
+async function createLocalVaultRecord(pin,data){
+ const all=getVault();
+ if(!canEncrypt()){
+   alert('This browser does not support secure local encryption. Cloud saving will still work, but this device will not create an encrypted local copy.');
+   activeRecord=null;vaultKey=null;return;
+ }
+ const salt=crypto.getRandomValues(new Uint8Array(16));
+ const key=await deriveKey(pin,salt);
+ const enc=await encryptData(data,key);
+ const record={salt:b64(salt),...enc};
+ all.push(record);setVault(all);
+ activeRecord={index:all.length-1,salt:record.salt,mode:'encrypted'};
+ vaultKey=key;
+}
+async function loadLocalRecord(pin){
+ const all=getVault();
+ if(!all.length)return false;
+ if(!canEncrypt())return false;
+ for(let i=0;i<all.length;i++){
+   if(!all[i].salt||!all[i].cipher)continue;
+   try{
+     const result=await decryptData(all[i],pin);
+     activeRecord={index:i,salt:all[i].salt,mode:'encrypted'};
+     vaultKey=result.key;
+     return true;
+   }catch(e){}
+ }
+ return false;
+}
+async function createInvite(){
+ if(!cloudChronicleId){alert('The cloud chronicle is not connected yet.');return}
+ try{
+   setSync('Creating invitation…');
+   const result=await sb.rpc('create_chronicle_invite',{p_chronicle_id:cloudChronicleId});
+   if(result.error)throw result.error;
+   const code=result.data;
+   try{await navigator.clipboard.writeText(code)}catch(e){}
+   alert('Emma can join using this one-time invitation code:\n\n'+code+'\n\nIt expires in 30 minutes and can only be used once.');
+   setSync('☁ Connected');
+ }catch(e){console.error(e);alert('Could not create invitation: '+e.message);setSync('Cloud error')}
+}
+function setSync(s){$('syncStatus').textContent=s}
+function setSaveStatus(s){$('saveStatus').textContent=s}
+function startCloudPolling(){
+ clearInterval(pollTimer);
+ pollTimer=setInterval(checkCloudChanges,10000);
+}
+async function checkCloudChanges(){
+ if(!cloudChronicleId||!workspace)return;
+ try{
+   const result=await sb.from('chronicles').select('data,updated_at').eq('id',cloudChronicleId).single();
+   if(result.error)throw result.error;
+   if(result.data.updated_at!==lastCloudUpdatedAt){
+     if(dirty){
+       setSync('Cloud changed — local edits waiting to save');
+       return;
+     }
+     workspace=result.data.data||freshWorkspace();
+     lastCloudUpdatedAt=result.data.updated_at;
+     await updateLocalCopy();
+     refreshCurrentView();
+     setSync('☁ Synced from other device');
+   }
+ }catch(e){console.error(e);setSync('Sync check failed')}
+}
+async function updateLocalCopy(){
+ if(!activeRecord||!vaultKey)return;
+ try{
+   const all=getVault(),enc=await encryptData(workspace,vaultKey);
+   all[activeRecord.index]={salt:activeRecord.salt,...enc};
+   setVault(all);
+ }catch(e){console.error(e)}
+}
+async function saveWorkspace(){
+ if(!workspace)return;
+ try{
+   await updateLocalCopy();
+   if(!cloudChronicleId){setSaveStatus('Saved locally; cloud not connected');return}
+   setSync('☁ Saving…');
+   const result=await sb.from('chronicles').update({
+     data:workspace,updated_at:new Date().toISOString()
+   }).eq('id',cloudChronicleId).select('updated_at').single();
+   if(result.error)throw result.error;
+   lastCloudUpdatedAt=result.data.updated_at;
+   dirty=false;
+   setSaveStatus('Saved to cloud');
+   setSync('☁ Synced');
+ }catch(e){
+   console.error(e);
+   setSaveStatus('Cloud save failed — export a backup');
+   setSync('Cloud save error');
+ }
+}
+function scheduleSave(){
+ dirty=true;
+ setSaveStatus('Ink still drying…');
+ clearTimeout(saveTimer);
+ saveTimer=setTimeout(saveWorkspace,900);
+}
+function refreshCurrentView(){
+ renderTree();
+ if(currentId&&findNode(currentId))renderNode(currentId);
+ else renderHome();
+}
+
+/* RUNE LOGIN */
+function drawSelection(){
+ document.querySelectorAll('.rune').forEach((b,i)=>{
+   b.classList.toggle('selected',selected.includes(i));
+   b.setAttribute('aria-pressed',selected.includes(i)?'true':'false');
+ });
+}
+function resetRunes(){
+ selected=[];drawSelection();
+ document.querySelectorAll('.rune').forEach(b=>b.disabled=false);
+}
+async function selectRune(i){
+ if(selected.length>=4||selected.includes(i))return;
+ selected.push(i);drawSelection();
+ if(selected.length===4){
+   document.querySelectorAll('.rune').forEach(b=>b.disabled=true);
+   await unlockOrConnect();
+ }
+}
+async function unlockOrConnect(){
+ const pin=pinText(),all=getVault();
+ try{
+   if(all.length){
+     const found=await loadLocalRecord(pin);
+     if(!found){
+       alert('Those runes did not unlock a journal on this device. Try again. No new journal has been created.');
+       resetRunes();return;
+     }
+     await ensureAuth();
+     const cloud=await findExistingChronicle();
+     if(!cloud){
+       alert('This device has a local journal, but its cloud chronicle was not found. Your local data has not been erased. Export a backup before proceeding.');
+       resetRunes();return;
+     }
+     cloudChronicleId=cloud.id;
+     workspace=cloud.data||freshWorkspace();
+     lastCloudUpdatedAt=cloud.updated_at||null;
+     dirty=false;
+     openJournal();setSync('☁ Connected');startCloudPolling();return;
+   }
+   await ensureAuth();
+   const existing=await findExistingChronicle();
+   if(existing){await activateChronicle(existing);return}
+   $('setupPanel').classList.remove('hidden');
+ }catch(e){
+   console.error(e);
+   alert('Could not connect to Supabase:\n'+e.message+'\n\nCheck your internet connection and Supabase settings.');
+   resetRunes();
+ }
+}
+
+/* JOURNAL AND CAMPAIGN EXPLORER */
+function openJournal(){
+ $('login').classList.add('hidden');$('app').classList.remove('hidden');
+ resetRunes();renderTree();renderHome();
+}
+function lockJournal(){
+ saveWorkspace();
+ clearInterval(pollTimer);
+ vaultKey=null;workspace=null;activeRecord=null;cloudChronicleId=null;authUser=null;currentId=null;editingChar=null;
+ $('app').classList.add('hidden');$('login').classList.remove('hidden');
+ setSync('Not connected');resetRunes();
+}
+function findNode(id,nodes=workspace.campaigns){
+ for(const n of nodes||[]){
+   if(n.id===id)return n;
+   const f=findNode(id,n.children||[]);
+   if(f)return f;
+ }
+ return null;
+}
+function renderTree(){
+ const root=$('tree');root.innerHTML='';
+ (workspace.campaigns||[]).forEach(c=>addTreeNode(root,c,0));
+ const chars=document.createElement('button');chars.textContent='♙ Characters';chars.onclick=renderCharacters;root.appendChild(chars);
+ if(!(workspace.campaigns||[]).length){
+   const p=document.createElement('p');p.className='status';p.textContent='Your campaigns will appear here.';root.appendChild(p);
+ }
+}
+function addTreeNode(root,n,depth){
+ const b=document.createElement('button');
+ b.className=(currentId===n.id?'active ':'')+'child';
+ b.style.paddingLeft=(6+depth*14)+'px';
+ const icon=n.type==='Campaign'?'▣ ':n.type==='Chapter'?'▤ ':n.type==='Location'?'⌖ ':n.type==='Trigger'?'⚑ ':'▱ ';
+ b.innerHTML=icon+esc(n.title)+' <span class="kind">'+esc(n.type)+'</span>';
+ b.onclick=()=>renderNode(n.id);root.appendChild(b);
+ (n.children||[]).forEach(ch=>addTreeNode(root,ch,depth+1));
+}
+function renderHome(){
+ currentId=null;
+ $('main').innerHTML='<div class="crumb">YOUR CHRONICLE</div><h1 class="page-title">A world waiting to be written</h1><div class="page-meta">A blank page, awaiting its first story.</div><p>Create a campaign, then build it outward with chapters, locations, encounters, quests, events, and notes.</p><div class="empty-note">Use ＋ Campaign to begin. Open a folder in the campaign explorer to write on its parchment page.</div>';
+}
+function renderNode(id){
+ const n=findNode(id);if(!n)return;
+ currentId=id;renderTree();
+ const crumbs=[];let w=n;
+ while(w){crumbs.unshift(w.title);w=w.parentId?findNode(w.parentId):null}
+ const childBtns=(n.children||[]).map(c=>'<button class="paper-btn" onclick="renderNode(\''+c.id+'\')">'+(c.type==='Trigger'?'⚑':'▱')+' '+esc(c.title)+'</button>').join(' ');
+ $('main').innerHTML='<div class="crumb">'+crumbs.map(esc).join(' / ')+'</div>'+
+ '<input class="field" id="nodeTitle" value="'+esc(n.title)+'" aria-label="Page title" style="font-family:Georgia;font-size:clamp(27px,4vw,38px);background:transparent;border:0;border-bottom:1px solid #b49a70;padding:5px 0">'+
+ '<div class="page-meta">'+esc(n.type)+' · Chronicle entry</div>'+
+ '<div class="toolbar"><button onclick="formatText(\'bold\')"><b>B</b></button><button onclick="formatText(\'italic\')"><i>I</i></button><button onclick="formatText(\'underline\')"><u>U</u></button><button onclick="formatText(\'formatBlock\',\'h2\')">Heading</button><button onclick="formatText(\'insertUnorderedList\')">• List</button><button onclick="formatText(\'formatBlock\',\'blockquote\')">Quote</button></div>'+
+ '<div class="editor" id="pageEditor" contenteditable="true" data-placeholder="Write the story, descriptions, clues, read-aloud text, and notes…">'+(n.content||'')+'</div>'+
+ '<h2 class="section-heading">Images & maps</h2><div class="upload-row"><label class="paper-btn" for="nodeImages">＋ Add images / maps</label><input id="nodeImages" type="file" accept="image/*" multiple></div><div class="image-grid" id="nodeImageGrid"></div>'+
+ '<h2 class="section-heading">Subfolders & triggers</h2><div class="page-tools">'+childBtns+' <button class="paper-btn" onclick="addChild(\''+n.id+'\')">＋ Add subfolder / trigger</button><button class="paper-btn danger" onclick="deleteNode(\''+n.id+'\')">Delete section</button></div>'+
+ (n.children?.length?'':'<div class="empty-note">No subfolders yet. Add a chapter, location, trigger, encounter, quest, or general note.</div>');
+ $('nodeTitle').oninput=e=>{n.title=e.target.value;renderTree();scheduleSave()};
+ $('pageEditor').oninput=e=>{n.content=e.target.innerHTML;scheduleSave()};
+ $('nodeImages').onchange=e=>addImages(e.target.files,n,'nodeImageGrid');
+ renderImages(n,'nodeImageGrid');
+}
+function formatText(cmd,val=null){document.execCommand(cmd,false,val);$('pageEditor')?.focus()}
+function addCampaign(){
+ const title=prompt('Name your campaign:');if(!title?.trim())return;
+ const n={id:uid(),title:title.trim(),type:'Campaign',content:'',images:[],children:[]};
+ workspace.campaigns.push(n);scheduleSave();renderTree();renderNode(n.id);
+}
+function addChild(pid){
+ const p=findNode(pid);if(!p)return;
+ const type=prompt('Section type: Chapter, Location, Trigger, Encounter, Quest, or General.','Chapter');
+ if(!type?.trim())return;
+ const title=prompt('Name this '+type+':');if(!title?.trim())return;
+ const n={id:uid(),title:title.trim(),type:type.trim(),parentId:pid,content:'',images:[],children:[]};
+ p.children=p.children||[];p.children.push(n);scheduleSave();renderTree();renderNode(n.id);
+}
+function deleteNode(id){
+ if(!confirm('Delete this section and everything inside it?'))return;
+ function rm(a){const i=a.findIndex(n=>n.id===id);if(i>=0){a.splice(i,1);return true}return a.some(n=>rm(n.children||[]))}
+ rm(workspace.campaigns);scheduleSave();renderTree();renderHome();
+}
+
+/* IMAGE UPLOADS */
+function compressImage(file){
+ return new Promise((resolve,reject)=>{
+   const fr=new FileReader();fr.onerror=reject;
+   fr.onload=()=>{
+     const img=new Image();img.onerror=reject;
+     img.onload=()=>{
+       const max=1500,scale=Math.min(1,max/Math.max(img.width,img.height));
+       const canvas=document.createElement('canvas');
+       canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);
+       canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+       resolve(canvas.toDataURL('image/jpeg',.78));
+     };
+     img.src=fr.result;
+   };
+   fr.readAsDataURL(file);
+ });
+}
+async function addImages(files,record,gridId){
+ for(const f of [...files]){
+   if(!f.type.startsWith('image/'))continue;
+   try{
+     const src=await compressImage(f);
+     record.images=record.images||[];
+     record.images.push({id:uid(),name:f.name,src,caption:''});
+     scheduleSave();
+   }catch(e){alert('Could not load '+f.name)}
+ }
+ renderImages(record,gridId);
+}
+function renderImages(record,gridId){
+ const g=$(gridId);if(!g)return;g.innerHTML='';
+ (record.images||[]).forEach(im=>{
+   const d=document.createElement('div');d.className='image-card';
+   d.innerHTML='<button title="Remove image">×</button><img src="'+im.src+'" alt="'+esc(im.name)+'"><input aria-label="Image caption" placeholder="Add a caption…" value="'+esc(im.caption||'')+'">';
+   d.querySelector('button').onclick=()=>{record.images=record.images.filter(x=>x.id!==im.id);scheduleSave();renderImages(record,gridId)};
+   d.querySelector('input').oninput=e=>{im.caption=e.target.value;scheduleSave()};
+   g.appendChild(d);
+ });
+}
+
+/* EDITABLE D&D 5E-STYLE CHARACTER SHEETS */
+const ABILITIES=[['str','Strength'],['dex','Dexterity'],['con','Constitution'],['int','Intelligence'],['wis','Wisdom'],['cha','Charisma']];
+const SKILLS=[['Acrobatics','dex'],['Animal Handling','wis'],['Arcana','int'],['Athletics','str'],['Deception','cha'],['History','int'],['Insight','wis'],['Intimidation','cha'],['Investigation','int'],['Medicine','wis'],['Nature','int'],['Perception','wis'],['Performance','cha'],['Persuasion','cha'],['Religion','int'],['Sleight of Hand','dex'],['Stealth','dex'],['Survival','wis']];
+function newCharacterData(name){
+ const c={id:uid(),name,images:[],abilities:{str:10,dex:10,con:10,int:10,wis:10,cha:10},skillProfs:[],saveProfs:[],spells:[],attacks:[],equipment:'',features:'',backstory:'',traits:'',ideals:'',bonds:'',flaws:'',languages:'',proficiencies:'',notes:''};
+ ['characterName','playerName','className','level','background','species','alignment','experience','inspiration','ac','initiative','speed','maxHp','currentHp','tempHp','hitDice','deathSuccess','deathFail','proficiencyBonus','spellAbility','spellSaveDC','spellAttackBonus','passivePerception','age','height','weight','eyes','skin','hair','personality','ideals','bonds','flaws','equipment','features','backstory','traits','languages','proficiencies','notes','cp','sp','ep','gp','pp','spellSlots1','spellSlots2','spellSlots3','spellSlots4','spellSlots5','spellSlots6','spellSlots7','spellSlots8','spellSlots9'].forEach(k=>c[k]='');
+ c.characterName=name;return c;
+}
+function renderCharacters(){
+ currentId=null;renderTree();
+ $('main').innerHTML='<div class="crumb">YOUR CHRONICLE / CHARACTER LIBRARY</div><h1 class="page-title">Character Library</h1><div class="page-meta">A library of heroes, allies, rivals, and creatures.</div><div class="page-tools"><button class="paper-btn" onclick="addCharacter()">＋ Create character</button></div><div class="character-grid" id="characterGrid"></div><div class="empty-note">Each character opens a complete editable D&D 5e-style sheet. Portraits and sheet data are saved in this journal.</div>';
+ const g=$('characterGrid');
+ workspace.characters.forEach(c=>{
+   const d=document.createElement('div');d.className='character';
+   const img=c.images?.[0]?.src;
+   d.innerHTML=(img?'<img src="'+img+'" alt="Character portrait">':'<div style="height:125px;display:grid;place-items:center;background:#d8c9ab;font-size:42px">♙</div>')+'<h3>'+esc(c.characterName||c.name||'Unnamed character')+'</h3><div>'+esc([c.species,c.className,c.level?'Level '+c.level:''].filter(Boolean).join(' · ')||'Character')+'</div><p><button class="paper-btn">Open character sheet</button></p>';
+   d.onclick=()=>editCharacter(c.id);g.appendChild(d);
+ });
+}
+function addCharacter(){
+ const name=prompt('Character name:');if(!name?.trim())return;
+ const c=newCharacterData(name.trim());workspace.characters.push(c);scheduleSave();renderCharacters();editCharacter(c.id);
+}
+function cVal(k){return editingChar?.[k]??''}
+function inputField(key,label,type='text',value=null){
+ return'<div class="sheet-field"><label>'+label+'<input data-char="'+key+'" type="'+type+'" value="'+esc(value??cVal(key))+'"></label></div>';
+}
+function areaField(key,label,rows=3){
+ return'<div class="sheet-field"><label>'+label+'<textarea data-char="'+key+'" rows="'+rows+'">'+esc(cVal(key))+'</textarea></label></div>';
+}
+function mod(v){return Math.floor(((Number(v)||10)-10)/2)}
+function bonus(c,a,prof){
+ const v=mod(c.abilities?.[a])+(prof?(Number(c.proficiencyBonus)||2):0);
+ return v>=0?'+'+v:String(v);
+}
+function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-')}
+function editCharacter(id){
+ const c=workspace.characters.find(x=>x.id===id);if(!c)return;
+ editingChar=c;
+ if(!c.abilities)c.abilities={str:10,dex:10,con:10,int:10,wis:10,cha:10};
+ c.images=c.images||[];c.skillProfs=c.skillProfs||[];c.saveProfs=c.saveProfs||[];
+ $('main').innerHTML=
+ '<div class="crumb">YOUR CHRONICLE / CHARACTERS / '+esc(c.characterName||c.name)+'</div>'+
+ '<div class="sheet-top"><div><h1 class="page-title">'+esc(c.characterName||c.name)+'</h1><div class="sheet-grid">'+inputField('characterName','Character name')+inputField('playerName','Player name')+inputField('className','Class & level')+inputField('species','Species / race')+inputField('background','Background')+inputField('alignment','Alignment')+inputField('experience','Experience points','number')+'</div></div>'+
+ '<div class="portrait-box"><img id="portraitPreview" src="'+(c.images[0]?.src||'')+'" alt="Character portrait"><label class="small-help" for="portraitUpload">Upload portrait</label><input id="portraitUpload" type="file" accept="image/*" style="width:100%;font-size:11px"></div></div>'+
+ '<h2 class="section-heading">Ability scores</h2><div class="ability-grid">'+ABILITIES.map(([k,l])=>'<div class="ability"><strong>'+l.toUpperCase()+'</strong><input type="number" min="1" max="30" data-ability="'+k+'" value="'+Number(c.abilities[k]??10)+'"><output id="mod-'+k+'">'+mod(c.abilities[k])+'</output></div>').join('')+'</div>'+
+ '<h2 class="section-heading">Combat & core statistics</h2><div class="stat-row">'+[['inspiration','Inspiration'],['proficiencyBonus','Proficiency bonus'],['ac','Armor class'],['initiative','Initiative'],['speed','Speed'],['maxHp','Max HP'],['currentHp','Current HP'],['tempHp','Temporary HP'],['hitDice','Hit dice'],['passivePerception','Passive perception'],['deathSuccess','Death saves — successes'],['deathFail','Death saves — failures']].map(([k,l])=>'<div class="stat-box"><label>'+l+'</label><input data-char="'+k+'" value="'+esc(c[k]??'')+'"></div>').join('')+'</div>'+
+ '<h2 class="section-heading">Saving throws</h2><div class="skills-grid">'+ABILITIES.map(([k,l])=>'<label class="skill-line"><input type="checkbox" data-save="'+k+'" '+(c.saveProfs.includes(k)?'checked':'')+'> '+l+' <output id="save-'+k+'">'+bonus(c,k,c.saveProfs.includes(k))+'</output></label>').join('')+'</div>'+
+ '<h2 class="section-heading">Skills</h2><div class="skills-grid">'+SKILLS.map(([l,a])=>'<label class="skill-line"><input type="checkbox" data-skill="'+l+'" '+(c.skillProfs.includes(l)?'checked':'')+'> '+l+' <span class="small-help">('+a.toUpperCase()+')</span><output id="skill-'+slug(l)+'">'+bonus(c,a,c.skillProfs.includes(l))+'</output></label>').join('')+'</div>'+
+ '<h2 class="section-heading">Attacks & spellcasting</h2><table class="sheet-table"><thead><tr><th>Attack / spell</th><th>Bonus</th><th>Damage / type</th><th>Notes</th></tr></thead><tbody id="attackRows"></tbody></table><button class="paper-btn" onclick="addAttack()">＋ Add attack</button>'+
+ '<div class="sheet-grid" style="margin-top:12px">'+inputField('spellAbility','Spellcasting ability')+inputField('spellSaveDC','Spell save DC')+inputField('spellAttackBonus','Spell attack bonus')+'</div>'+
+ '<h2 class="section-heading">Spell slots</h2><div class="sheet-grid">'+Array.from({length:9},(_,i)=>inputField('spellSlots'+(i+1),'Level '+(i+1)+' slots')).join('')+'</div>'+
+ '<h2 class="section-heading">Features, proficiencies & languages</h2><div class="sheet-grid">'+areaField('features','Class features & traits',5)+areaField('traits','Species traits',4)+areaField('proficiencies','Armor, weapon & tool proficiencies',4)+areaField('languages','Languages',3)+'</div>'+
+ '<h2 class="section-heading">Equipment & treasure</h2><div class="sheet-grid">'+['cp','sp','ep','gp','pp'].map(k=>inputField(k,k.toUpperCase(),'number')).join('')+'</div>'+areaField('equipment','Equipment & inventory',5)+
+ '<h2 class="section-heading">Character details</h2><div class="sheet-grid">'+inputField('age','Age')+inputField('height','Height')+inputField('weight','Weight')+inputField('eyes','Eyes')+inputField('skin','Skin')+inputField('hair','Hair')+'</div>'+
+ '<div class="sheet-grid">'+areaField('personality','Personality traits',3)+areaField('ideals','Ideals',3)+areaField('bonds','Bonds',3)+areaField('flaws','Flaws',3)+'</div>'+
+ areaField('backstory','Backstory',6)+areaField('notes','Other notes',5)+
+ '<div class="page-tools"><button class="paper-btn" onclick="renderCharacters()">← Character library</button><button class="paper-btn" onclick="saveWorkspace()">Save sheet</button><button class="paper-btn danger" onclick="removeCharacter(\''+c.id+'\')">Delete character</button></div>'+
+ '<p class="small-help">This is an editable 5e-style sheet. Ability modifiers and proficient skill/save bonuses calculate automatically. AC, HP, spell slots, and attack damage remain editable.</p>';
+
+ document.querySelectorAll('[data-char]').forEach(el=>el.addEventListener('input',()=>{c[el.dataset.char]=el.value;scheduleSave()}));
+ document.querySelectorAll('[data-ability]').forEach(el=>el.addEventListener('input',()=>{c.abilities[el.dataset.ability]=Number(el.value)||0;updateBonuses(c)}));
+ document.querySelectorAll('[data-skill]').forEach(el=>el.addEventListener('change',()=>{c.skillProfs=[...document.querySelectorAll('[data-skill]:checked')].map(x=>x.dataset.skill);updateBonuses(c)}));
+ document.querySelectorAll('[data-save]').forEach(el=>el.addEventListener('change',()=>{c.saveProfs=[...document.querySelectorAll('[data-save]:checked')].map(x=>x.dataset.save);updateBonuses(c)}));
+ $('portraitUpload').onchange=async e=>{
+   if(e.target.files[0]){
+     const src=await compressImage(e.target.files[0]);
+     c.images=[{id:uid(),name:e.target.files[0].name,src,caption:'Portrait'},...(c.images.slice(1))];
+     $('portraitPreview').src=src;scheduleSave();
+   }
+ };
+ renderAttacks(c);updateBonuses(c);
+}
+function updateBonuses(c){
+ ABILITIES.forEach(([k])=>{
+   $('mod-'+k).textContent=(mod(c.abilities[k])>=0?'+':'')+mod(c.abilities[k]);
+   $('save-'+k).textContent=bonus(c,k,c.saveProfs.includes(k));
+ });
+ SKILLS.forEach(([l,a])=>{$('skill-'+slug(l)).textContent=bonus(c,a,c.skillProfs.includes(l))});
+ scheduleSave();
+}
+function renderAttacks(c){
+ const body=$('attackRows');body.innerHTML='';
+ c.attacks=c.attacks||[];
+ c.attacks.forEach((a,i)=>{
+   const tr=document.createElement('tr');
+   tr.innerHTML=['name','bonus','damage','notes'].map(k=>'<td><input data-attack="'+i+'" data-ak="'+k+'" value="'+esc(a[k]||'')+'"></td>').join('');
+   body.appendChild(tr);
+ });
+ body.querySelectorAll('input').forEach(el=>el.oninput=()=>{
+   c.attacks[Number(el.dataset.attack)][el.dataset.ak]=el.value;scheduleSave();
+ });
+}
+function addAttack(){
+ if(!editingChar)return;
+ editingChar.attacks=editingChar.attacks||[];
+ editingChar.attacks.push({name:'',bonus:'',damage:'',notes:''});
+ renderAttacks(editingChar);scheduleSave();
+}
+function removeCharacter(id){
+ if(!confirm('Delete this character?'))return;
+ workspace.characters=workspace.characters.filter(c=>c.id!==id);
+ editingChar=null;scheduleSave();renderCharacters();
+}
+
+/* BUTTONS AND BACKUP */
+$('runeGrid').querySelectorAll('.rune').forEach(b=>b.addEventListener('click',()=>selectRune(Number(b.dataset.rune))));
+$('lockBtn').onclick=lockJournal;
+$('newCampaign').onclick=addCampaign;
+$('newFolder').onclick=()=>{
+ if(!currentId){alert('Open a campaign or folder first.');return}
+ addChild(currentId);
+};
+$('newCharacter').onclick=addCharacter;
+$('pairBtn').onclick=createInvite;
+$('createCloudBtn').onclick=async()=>{
+ try{await createCloudChronicle()}catch(e){
+   console.error(e);
+   alert('Could not create chronicle:\n\n'+e.message);
+   setSync('Cloud error');
+ }
+};
+$('joinCloudBtn').onclick=async()=>{
+ try{await claimInvite()}catch(e){console.error(e);alert('Could not join chronicle: '+e.message);setSync('Cloud error')}
+};
+$('cancelSetupBtn').onclick=()=>{$('setupPanel').classList.add('hidden');resetRunes()};
+$('exportBtn').onclick=()=>{
+ if(!workspace)return;
+ const blob=new Blob([JSON.stringify(workspace,null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+ a.download='dms-chronicle-backup.json';a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+window.addEventListener('beforeunload',()=>{
+ if(workspace&&activeRecord){
+   try{
+     const all=getVault(),enc=activeRecord.mode==='encrypted'&&vaultKey?null:null;
+     if(enc){}
+   }catch(e){}
+ }
+});
+</script>
+</body>
+</html>
