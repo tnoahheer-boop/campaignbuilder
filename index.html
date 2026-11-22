@@ -1,0 +1,354 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#211712"><title>Dungeon Master's Chronicle</title>
+<style>
+:root{--ink:#382719;--ink2:#604832;--muted:#80684d;--edge:#ad9068;--paper:#e9d9b7;--paper-light:#f4e9ce;--blue:#438fff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Georgia,'Times New Roman',serif;color:var(--ink)}button,input,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+/* LEATHER BOOK COVER */
+#login{min-height:100svh;display:grid;place-items:center;padding:14px;background:radial-gradient(ellipse at 50% 42%,#453326 0,#211914 58%,#0d0a09 100%)}
+.book-cover{position:relative;isolation:isolate;overflow:hidden;width:min(760px,100%);min-height:min(900px,calc(100svh - 28px));padding:clamp(28px,5vw,54px) clamp(18px,4.5vw,42px);display:flex;flex-direction:column;align-items:center;background-color:#241510;background-image:radial-gradient(ellipse at 18% 15%,#a16d3c38,transparent 34%),radial-gradient(ellipse at 82% 78%,#050302a8,transparent 48%),radial-gradient(ellipse at 48% 48%,#6d42251c,transparent 65%),repeating-linear-gradient(7deg,#ffffff0b 0 1px,transparent 1px 3px),repeating-linear-gradient(94deg,#00000030 0 1px,transparent 1px 6px),repeating-radial-gradient(ellipse at 30% 40%,#ffffff08 0 1px,#00000008 1px 3px,transparent 3px 7px),linear-gradient(135deg,#513321 0%,#2a1a13 25%,#3b2519 50%,#1c110d 78%,#392316 100%);border:4px solid #765638;border-radius:18px;box-shadow:inset 0 0 0 6px #160e0a,inset 0 0 0 8px #a27b4b,inset 0 0 0 11px #21140e,inset 0 0 65px 20px #080403,0 28px 90px #000,8px 5px 0 #100a07,13px 9px 0 #4b3020}
+.book-cover:before{content:"";position:absolute;inset:17px;border:1px solid #b08a55a8;border-radius:11px;box-shadow:inset 0 0 35px #080504;pointer-events:none;z-index:0}
+.book-cover:after{content:"";position:absolute;top:0;bottom:0;left:clamp(19px,4vw,36px);width:13px;border-left:2px solid #a47a4a88;border-right:1px solid #090604aa;background:linear-gradient(90deg,#08050488,#a47a4a22 35%,#05030266);box-shadow:5px 0 12px #08050466;pointer-events:none;z-index:0}
+.book-cover>*{position:relative;z-index:1}
+.cover-ornament{color:#ad8956;font-size:22px;line-height:1;text-shadow:0 0 12px #b58a4a55;margin:4px 0 14px}
+.book-cover h1{max-width:600px;margin:0 0 clamp(26px,5vh,46px);text-align:center;text-transform:uppercase;font-weight:normal;font-size:clamp(25px,5.6vw,46px);line-height:1.18;letter-spacing:clamp(2px,.65vw,5px);color:#d8bd8b;text-shadow:0 1px 0 #f1d9a1,0 2px 1px #080503,0 3px 2px #080503,0 -1px 1px #6f4d2d,0 0 18px #bd945044;filter:drop-shadow(0 3px 2px #080503)}
+.rune-grid{width:min(100%,620px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(8px,2vw,17px);position:relative;z-index:2}
+.rune{appearance:none;display:grid;place-items:center;min-width:0;aspect-ratio:1;padding:0;border:2px solid #73583e;border-radius:clamp(14px,3vw,24px);background:radial-gradient(ellipse at 35% 25%,#49362a,#211915 70%);color:#d4bd91;font-family:'Times New Roman',serif;font-size:clamp(36px,8.2vw,64px);font-weight:normal;line-height:1;box-shadow:inset 0 2px 10px #090706,inset 0 -2px 8px #4a3829,0 4px 9px #080605,0 0 0 1px #140d09;transition:background .14s,border-color .14s,box-shadow .14s,color .14s,transform .12s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.rune:active{transform:scale(.96)}
+.rune.selected{color:#a8ceff;border-color:#559cff;background:linear-gradient(145deg,#28384d,#182333 72%,#1e2d42);box-shadow:inset 0 0 20px #246bd966,0 0 8px #3188ff,0 0 23px #237bffb3,0 0 42px #1765d66c;text-shadow:0 0 13px #58a5ff;animation:runeGlow .9s ease-in-out infinite alternate}
+@keyframes runeGlow{from{filter:brightness(1);box-shadow:inset 0 0 16px #246bd955,0 0 6px #3188ff,0 0 17px #237bff88}to{filter:brightness(1.35);box-shadow:inset 0 0 24px #246bd988,0 0 12px #58a5ff,0 0 34px #237bffcc,0 0 52px #1765d688}}
+.rune:focus-visible{outline:2px solid #83baff;outline-offset:3px}
+.cover-bottom{margin-top:auto;padding-top:18px;color:#806344;font-size:13px;letter-spacing:5px;text-shadow:0 1px #080605}
+/* PARCHMENT JOURNAL WORKSPACE */
+#app{min-height:100svh;padding:clamp(10px,2vw,24px);background-color:#d5c29d;background-image:radial-gradient(ellipse at 20% 10%,#fff5d455,transparent 45%),radial-gradient(ellipse at 80% 85%,#92734a20,transparent 50%),repeating-linear-gradient(0deg,#73552a08 0 1px,transparent 1px 5px),repeating-linear-gradient(90deg,#ffffff16 0 1px,transparent 1px 7px),linear-gradient(120deg,#e8d9b9,#d9c6a2 52%,#eadcbd)}
+.journal{max-width:1500px;margin:auto;min-height:calc(100svh - 40px);padding:clamp(12px,2vw,22px);border:1px solid #a58a61;background-color:#e8d9b9;background-image:radial-gradient(#896c4218 .7px,transparent .8px),repeating-linear-gradient(0deg,#8c70400a 0 1px,transparent 1px 5px),linear-gradient(100deg,#f1e5ca,#e6d5b2 50%,#f0e2c3);background-size:5px 5px,100% 100%,100% 100%;box-shadow:0 8px 30px #4d382533,inset 0 0 35px #94764a18;position:relative}
+.journal:before{content:"";position:absolute;inset:9px;border:1px solid #b49a70;pointer-events:none}
+.topbar{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 8px 15px;border-bottom:3px double #a88b61}
+.brand{font-size:clamp(18px,2.5vw,25px);letter-spacing:1px;color:#493321}
+.brand small{display:block;margin-top:4px;font-size:10px;letter-spacing:3px;color:#8b7251;font-style:italic}
+.top-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.paper-btn{padding:8px 11px;border:1px solid #b49a70;border-radius:3px;background:linear-gradient(#f3e7cb,#dfcba6);box-shadow:0 2px 3px #49351b20;color:#503923}
+.paper-btn:hover{background:#f8edda}
+.layout{position:relative;display:grid;grid-template-columns:270px minmax(0,1fr);gap:17px;min-height:calc(100svh - 135px);padding-top:16px}
+.sidebar,.main{min-width:0;border:1px solid #b49a70;box-shadow:inset 0 0 22px #94764a12,0 3px 10px #5a402018;background-color:#eee1c2;background-image:radial-gradient(#896c4210 .7px,transparent .8px),linear-gradient(100deg,#f0e4c9,#e9d9b8);background-size:5px 5px,100% 100%}
+.sidebar{padding:16px;overflow:auto}
+.side-title{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#806648;border-bottom:1px solid #b49a70;padding-bottom:9px;margin-bottom:10px}
+.tree button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:8px 6px;border-radius:2px;color:#493522}
+.tree button:hover,.tree button.active{background:#d7c39e}
+.tree .kind{color:#947b5b;font-size:11px;margin-left:5px}
+.main{padding:clamp(17px,3vw,36px);overflow:auto}
+.crumb{font-size:12px;color:#8a7050;margin-bottom:13px}
+.page-title{font-size:clamp(27px,4vw,38px);font-weight:normal;margin:0 0 9px;border-bottom:1px solid #b49a70;padding-bottom:13px;color:#493321}
+.page-meta{font-style:italic;color:#8a7050;margin-bottom:20px}
+.editor{min-height:320px;line-height:1.8;font-size:17px;outline:none;padding:15px 13px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,#a78e683b 32px);border-left:1px solid #b49a70;color:#463321}
+.editor:empty:before{content:attr(data-placeholder);color:#a08a69;font-style:italic}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.toolbar button{padding:6px 9px;background:#e5d5b4;border:1px solid #b49a70;border-radius:3px;color:#493522}
+.page-tools{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.empty-note{color:#8a7050;font-style:italic;border:1px dashed #b49a70;padding:18px;margin-top:15px}
+.character-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.character{border:1px solid #b49a70;background:#f0e3c5;padding:14px;cursor:pointer;box-shadow:0 2px 6px #49351b18}
+.character:hover{box-shadow:0 3px 12px #49351b30}
+.character h3{margin:0 0 6px}
+.field{width:100%;padding:9px;background:#f8efd9;border:1px solid #b49a70;margin:5px 0 12px;color:#493522}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.form-grid label{font-size:13px;color:#806648}
+.status{font-size:12px;color:#8a7050;margin-top:12px}
+.danger{color:#853e2c}
+@media(max-width:760px){
+.book-cover{min-height:calc(100svh - 28px);padding:35px 17px 25px}
+.book-cover h1{margin:12px 0 30px}
+.rune-grid{gap:9px}
+.rune{font-size:clamp(35px,9vw,54px)}
+.cover-bottom{padding-top:20px}
+.layout{grid-template-columns:1fr}
+.sidebar{max-height:235px}
+.topbar{align-items:flex-start;flex-direction:column}
+.top-actions{justify-content:flex-start}
+.main{min-height:60vh}
+.journal{padding:12px}
+}
+</style>
+</head>
+<body>
+<section id="login" aria-label="Chronicle cover">
+ <div class="book-cover">
+  <div class="cover-ornament">✧ &nbsp; ⟡ &nbsp; ✧</div>
+  <h1>Dungeon Master's Chronicle</h1>
+  <div class="rune-grid" id="runeGrid">
+   <button class="rune" type="button" data-rune="0" aria-label="Rune one">ᚠ</button>
+   <button class="rune" type="button" data-rune="1" aria-label="Rune two">ᚢ</button>
+   <button class="rune" type="button" data-rune="2" aria-label="Rune three">ᚦ</button>
+   <button class="rune" type="button" data-rune="3" aria-label="Rune four">ᚨ</button>
+   <button class="rune" type="button" data-rune="4" aria-label="Rune five">ᚱ</button>
+   <button class="rune" type="button" data-rune="5" aria-label="Rune six">ᚲ</button>
+   <button class="rune" type="button" data-rune="6" aria-label="Rune seven">ᚷ</button>
+   <button class="rune" type="button" data-rune="7" aria-label="Rune eight">ᚹ</button>
+   <button class="rune" type="button" data-rune="8" aria-label="Rune nine">ᚺ</button>
+   <button class="rune" type="button" data-rune="9" aria-label="Rune ten">ᚾ</button>
+   <button class="rune" type="button" data-rune="10" aria-label="Rune eleven">ᛁ</button>
+   <button class="rune" type="button" data-rune="11" aria-label="Rune twelve">ᛃ</button>
+   <button class="rune" type="button" data-rune="12" aria-label="Rune thirteen">ᛇ</button>
+   <button class="rune" type="button" data-rune="13" aria-label="Rune fourteen">ᛈ</button>
+   <button class="rune" type="button" data-rune="14" aria-label="Rune fifteen">ᛉ</button>
+   <button class="rune" type="button" data-rune="15" aria-label="Rune sixteen">ᛊ</button>
+  </div>
+  <div class="cover-bottom">✦ &nbsp; ✦ &nbsp; ✦</div>
+ </div>
+</section>
+<section id="app" class="hidden">
+ <div class="journal">
+  <header class="topbar">
+   <div class="brand">✧ DM'S CHRONICLE <small>THE ARCHIVE OF WORLDS UNSEEN</small></div>
+   <div class="top-actions">
+    <button class="paper-btn" id="newCampaign">＋ Campaign</button>
+    <button class="paper-btn" id="newFolder">＋ Folder</button>
+    <button class="paper-btn" id="newCharacter">＋ Character</button>
+    <button class="paper-btn" id="exportBtn">Export</button>
+    <button class="paper-btn" id="lockBtn">Close journal</button>
+   </div>
+  </header>
+  <div class="layout">
+   <aside class="sidebar">
+    <div class="side-title">Archive index</div>
+    <div id="tree" class="tree"></div>
+    <div class="status" id="saveStatus">Saved in this journal</div>
+   </aside>
+   <main class="main" id="main">
+    <div class="crumb">YOUR CHRONICLE</div>
+    <h1 class="page-title">A world waiting to be written</h1>
+    <div class="page-meta">A blank page, awaiting its first story.</div>
+    <p>Create a campaign, then add chapters, locations, encounters, quests, and anything else your world requires.</p>
+    <div class="empty-note">Select a folder from the archive, or create your first campaign.</div>
+   </main>
+  </div>
+ </div>
+</section>
+<script>
+const STORE='dm_chronicle_encrypted_v2';
+let selected=[],vaultKey=null,workspace=null,currentId=null,saveTimer=null,activeRecord=null;
+const $=id=>document.getElementById(id);
+const uid=()=>crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36);
+
+function getVault(){try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch{return []}}
+function setVault(v){localStorage.setItem(STORE,JSON.stringify(v))}
+function pinText(){return selected.map(i=>String(i).padStart(2,'0')).join('-')}
+function b64(buf){return btoa(String.fromCharCode(...new Uint8Array(buf)))}
+function unb64(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
+function freshWorkspace(){return {campaigns:[],characters:[]}}
+const canEncrypt=()=>!!(window.crypto&&crypto.subtle&&window.isSecureContext);
+
+async function deriveKey(pin,salt){
+ const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);
+ return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function encryptData(data,key){
+ const iv=crypto.getRandomValues(new Uint8Array(12));
+ const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(data)));
+ return {iv:b64(iv),cipher:b64(cipher)};
+}
+async function decryptData(record,pin){
+ const key=await deriveKey(pin,unb64(record.salt));
+ const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(record.iv)},key,unb64(record.cipher));
+ return {key,data:JSON.parse(new TextDecoder().decode(plain))};
+}
+function drawSelection(){
+ document.querySelectorAll('.rune').forEach((b,i)=>{
+  b.classList.toggle('selected',selected.includes(i));
+  b.setAttribute('aria-pressed',selected.includes(i)?'true':'false');
+ });
+}
+async function selectRune(i){
+ if(selected.length>=4||selected.includes(i))return;
+ selected.push(i);
+ drawSelection();
+ if(selected.length===4){
+  document.querySelectorAll('.rune').forEach(b=>b.disabled=true);
+  await unlockOrCreate();
+ }
+}
+async function unlockOrCreate(){
+ const pin=pinText(),all=getVault();
+ try{
+  if(canEncrypt()){
+   for(let i=0;i<all.length;i++){
+    if(!all[i].salt||!all[i].cipher)continue;
+    try{
+     const result=await decryptData(all[i],pin);
+     activeRecord={index:i,salt:all[i].salt,mode:'encrypted'};
+     vaultKey=result.key;workspace=result.data;openJournal();return;
+    }catch(e){}
+   }
+   const salt=crypto.getRandomValues(new Uint8Array(16));
+   const key=await deriveKey(pin,salt);
+   const data=freshWorkspace();
+   const enc=await encryptData(data,key);
+   const record={salt:b64(salt),...enc};
+   all.push(record);setVault(all);
+   activeRecord={index:all.length-1,salt:record.salt,mode:'encrypted'};
+   vaultKey=key;workspace=data;openJournal();return;
+  }
+  // Local-preview fallback. This mode is not encrypted.
+  const fallbackKey='local-'+pin;
+  let idx=all.findIndex(x=>x.fallbackKey===fallbackKey);
+  if(idx>=0){
+   workspace=all[idx].data;activeRecord={index:idx,mode:'local'};
+  }else{
+   workspace=freshWorkspace();
+   all.push({fallbackKey,data:workspace});
+   idx=all.length-1;activeRecord={index:idx,mode:'local'};
+  }
+  setVault(all);openJournal();
+ }catch(err){
+  console.error('Chronicle unlock failed:',err);
+  resetRunes();
+ }
+}
+function resetRunes(){
+ selected=[];drawSelection();
+ document.querySelectorAll('.rune').forEach(b=>b.disabled=false);
+}
+function openJournal(){
+ $('login').classList.add('hidden');
+ $('app').classList.remove('hidden');
+ resetRunes();renderTree();renderHome();
+}
+async function lockJournal(){
+ await saveWorkspace();
+ vaultKey=null;workspace=null;activeRecord=null;currentId=null;
+ $('app').classList.add('hidden');$('login').classList.remove('hidden');
+ resetRunes();
+}
+async function saveWorkspace(){
+ if(!workspace||!activeRecord)return;
+ const all=getVault();
+ if(activeRecord.mode==='local'){
+  all[activeRecord.index]={fallbackKey:all[activeRecord.index].fallbackKey,data:workspace};
+ }else{
+  if(!vaultKey)return;
+  const enc=await encryptData(workspace,vaultKey);
+  all[activeRecord.index]={salt:activeRecord.salt,...enc};
+ }
+ setVault(all);$('saveStatus').textContent='Saved in this journal';
+}
+function scheduleSave(){
+ $('saveStatus').textContent='Ink still drying…';
+ clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveWorkspace(),450);
+}
+function escapeHtml(s){
+ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function findNode(id,nodes=workspace.campaigns){
+ for(const n of nodes){
+  if(n.id===id)return n;
+  const f=findNode(id,n.children||[]);
+  if(f)return f;
+ }
+ return null;
+}
+function renderTree(){
+ const root=$('tree');root.innerHTML='';
+ workspace.campaigns.forEach(c=>addTreeNode(root,c,0));
+ const chars=document.createElement('button');
+ chars.textContent='♙ Character Library';chars.onclick=renderCharacters;root.appendChild(chars);
+ if(!workspace.campaigns.length){
+  const p=document.createElement('p');p.className='status';
+  p.textContent='Your campaign folders will appear here.';root.appendChild(p);
+ }
+}
+function addTreeNode(root,node,depth){
+ const b=document.createElement('button');
+ b.style.paddingLeft=(6+depth*16)+'px';
+ const icon=node.type==='Campaign'?'▣ ':node.type==='Chapter'?'▤ ':node.type==='Location'?'⌖ ':'▱ ';
+ b.innerHTML=icon+escapeHtml(node.title)+' <span class="kind">'+escapeHtml(node.type)+'</span>';
+ b.className=currentId===node.id?'active':'';
+ b.onclick=()=>renderNode(node.id);root.appendChild(b);
+ (node.children||[]).forEach(ch=>addTreeNode(root,ch,depth+1));
+}
+function renderHome(){
+ currentId=null;
+ $('main').innerHTML='<div class="crumb">YOUR CHRONICLE</div><h1 class="page-title">A world waiting to be written</h1><div class="page-meta">A blank page, awaiting its first story.</div><p>Create a campaign, then build it outward with chapters, locations, events, characters, and notes.</p><div class="empty-note">Use <b>＋ Campaign</b> to begin. Your archive is yours to shape.</div>';
+}
+function renderNode(id){
+ const n=findNode(id);if(!n)return;
+ currentId=id;renderTree();
+ const crumbs=[];let w=n;
+ while(w){crumbs.unshift(w.title);w=w.parentId?findNode(w.parentId):null}
+ const children=(n.children||[]).map(c=>'<button class="paper-btn" onclick="renderNode(\''+c.id+'\')">▱ '+escapeHtml(c.title)+'</button>').join(' ');
+ $('main').innerHTML=
+ '<div class="crumb">'+crumbs.map(escapeHtml).join(' / ')+'</div>'+
+ '<input class="field" id="nodeTitle" value="'+escapeHtml(n.title)+'" aria-label="Folder title" style="font-family:Georgia;font-size:30px;background:transparent;border:0;border-bottom:1px solid #b49a70;padding:5px 0">'+
+ '<div class="page-meta">'+escapeHtml(n.type)+' · Chronicle entry</div>'+
+ '<div class="toolbar"><button onclick="formatText(\'bold\')"><b>B</b></button><button onclick="formatText(\'italic\')"><i>I</i></button><button onclick="formatText(\'underline\')"><u>U</u></button><button onclick="formatText(\'formatBlock\',\'h2\')">Heading</button><button onclick="formatText(\'insertUnorderedList\')">• List</button></div>'+
+ '<div class="editor" id="pageEditor" contenteditable="true" data-placeholder="Write the story, details, descriptions, clues, and notes for this section…">'+(n.content||'')+'</div>'+
+ '<div class="page-tools">'+children+' <button class="paper-btn" onclick="addChild(\''+n.id+'\')">＋ Add subfolder</button><button class="paper-btn danger" onclick="deleteNode(\''+n.id+'\')">Delete folder</button></div>'+
+ (n.children?.length?'':'<div class="empty-note">This section has no subfolders yet. Add a subfolder for a location, trigger, encounter, quest, or anything else.</div>');
+ $('nodeTitle').oninput=e=>{n.title=e.target.value;renderTree();scheduleSave()};
+ $('pageEditor').oninput=e=>{n.content=e.target.innerHTML;scheduleSave()};
+}
+function formatText(cmd,val=null){document.execCommand(cmd,false,val);$('pageEditor')?.focus()}
+function addCampaign(){
+ const title=prompt('Name your campaign:');if(!title?.trim())return;
+ const n={id:uid(),title:title.trim(),type:'Campaign',content:'',children:[]};
+ workspace.campaigns.push(n);scheduleSave();renderTree();renderNode(n.id);
+}
+function addChild(parentId){
+ const parent=findNode(parentId);
+ const type=prompt('Section type: Chapter, Location, Trigger, Encounter, Quest, or General.','Chapter');
+ if(!type)return;
+ const title=prompt('Name this '+type+':');if(!title?.trim())return;
+ const n={id:uid(),title:title.trim(),type:type.trim(),parentId,content:'',children:[]};
+ parent.children=parent.children||[];parent.children.push(n);
+ scheduleSave();renderTree();renderNode(n.id);
+}
+function deleteNode(id){
+ if(!confirm('Delete this folder and everything inside it?'))return;
+ function remove(arr){
+  const i=arr.findIndex(n=>n.id===id);
+  if(i>=0){arr.splice(i,1);return true}
+  return arr.some(n=>remove(n.children||[]));
+ }
+ remove(workspace.campaigns);scheduleSave();renderTree();renderHome();
+}
+function renderCharacters(){
+ currentId=null;renderTree();
+ $('main').innerHTML='<div class="crumb">YOUR CHRONICLE / CHARACTER LIBRARY</div><h1 class="page-title">Character Library</h1><div class="page-meta">Reusable records for the people and creatures in your world.</div><div class="character-grid" id="characterGrid"></div><div class="empty-note">Characters you create here can be referenced in your campaign notes.</div>';
+ const g=$('characterGrid');
+ workspace.characters.forEach(c=>{
+  const d=document.createElement('div');d.className='character';
+  d.innerHTML='<h3>'+escapeHtml(c.name)+'</h3><div>'+escapeHtml(c.role||'Character')+'</div><small>'+escapeHtml(c.notes||'No notes yet')+'</small><p><button class="paper-btn">Edit sheet</button></p>';
+  d.onclick=()=>editCharacter(c.id);g.appendChild(d);
+ });
+}
+function addCharacter(){
+ const name=prompt('Character name:');if(!name?.trim())return;
+ const c={id:uid(),name:name.trim(),role:'',level:'',ancestry:'',className:'',ac:'',hp:'',notes:''};
+ workspace.characters.push(c);scheduleSave();renderCharacters();editCharacter(c.id);
+}
+function editCharacter(id){
+ const c=workspace.characters.find(x=>x.id===id);if(!c)return;
+ $('main').innerHTML='<div class="crumb">YOUR CHRONICLE / CHARACTER LIBRARY</div><h1 class="page-title">Character Sheet</h1><div class="form-grid">'+
+ [['name','Name'],['role','Role'],['ancestry','Ancestry'],['className','Class'],['level','Level'],['ac','Armor Class'],['hp','Hit Points']].map(([k,l])=>'<label>'+l+'<input class="field" data-key="'+k+'" value="'+escapeHtml(c[k])+'"></label>').join('')+
+ '</div><label>Abilities, equipment, backstory, and notes<textarea class="field" rows="9" data-key="notes">'+escapeHtml(c.notes)+'</textarea></label><div class="page-tools"><button class="paper-btn" onclick="renderCharacters()">Back to library</button><button class="paper-btn danger" onclick="removeCharacter(\''+id+'\')">Delete character</button></div>';
+ document.querySelectorAll('[data-key]').forEach(el=>el.oninput=()=>{c[el.dataset.key]=el.value;scheduleSave()});
+}
+function removeCharacter(id){
+ if(!confirm('Delete this character?'))return;
+ workspace.characters=workspace.characters.filter(c=>c.id!==id);
+ scheduleSave();renderCharacters();
+}
+document.querySelectorAll('.rune').forEach(b=>b.addEventListener('click',()=>selectRune(Number(b.dataset.rune))));
+$('lockBtn').onclick=lockJournal;
+$('newCampaign').onclick=addCampaign;
+$('newFolder').onclick=()=>{if(!currentId){alert('Open a campaign or folder first.');return}addChild(currentId)};
+$('newCharacter').onclick=addCharacter;
+$('exportBtn').onclick=()=>{
+ const blob=new Blob([JSON.stringify(workspace,null,2)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='dms-chronicle-backup.json';a.click();URL.revokeObjectURL(a.href);
+};
+</script>
+</body>
+</html>
